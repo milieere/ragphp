@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG Chatbot Backend</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        .endpoint {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        .endpoint-method {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.85em;
+            margin-right: 10px;
+        }
+        .get { background: #28a745; color: white; }
+        .post { background: #007bff; color: white; }
+        .delete { background: #dc3545; color: white; }
+        .endpoint-path {
+            font-family: 'Courier New', monospace;
+            color: #333;
+            font-weight: bold;
+        }
+        .endpoint-desc {
+            color: #666;
+            margin-top: 8px;
+            font-size: 0.95em;
+        }
+        .test-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f1f3f5;
+            border-radius: 8px;
+        }
+        .test-section h3 {
+            color: #495057;
+            margin-bottom: 15px;
+        }
+        .button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: background 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .button:hover {
+            background: #5568d3;
+        }
+        .button-success {
+            background: #28a745;
+        }
+        .button-success:hover {
+            background: #218838;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .status-ok {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .status-error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .feature {
+            display: flex;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+        .feature-icon {
+            font-size: 1.5em;
+            margin-right: 15px;
+        }
+        .feature-text h3 {
+            color: #495057;
+            margin-bottom: 5px;
+        }
+        .feature-text p {
+            color: #6c757d;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 RAG Chatbot Backend</h1>
+            <p>Retrieval-Augmented Generation API</p>
+        </div>
+
+        <div class="card">
+            <h2>🎯 About This API</h2>
+            <div class="feature">
+                <div class="feature-icon">📚</div>
+                <div class="feature-text">
+                    <h3>Document Management</h3>
+                    <p>Upload and search through documents to build a knowledge base for the chatbot.</p>
+                </div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">💬</div>
+                <div class="feature-text">
+                    <h3>RAG Chat</h3>
+                    <p>Ask questions and receive answers augmented with relevant context from your documents.</p>
+                </div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">⚡</div>
+                <div class="feature-text">
+                    <h3>Streaming Responses</h3>
+                    <p>Real-time streaming of chat responses for a smooth user experience.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📡 API Endpoints</h2>
+            
+            <div class="endpoint">
+                <span class="endpoint-method get">GET</span>
+                <span class="endpoint-path">/api/health</span>
+                <div class="endpoint-desc">Check API health status</div>
+            </div>
+            
+            <div class="endpoint">
+                <span class="endpoint-method post">POST</span>
+                <span class="endpoint-path">/api/documents</span>
+                <div class="endpoint-desc">Upload a new document to the knowledge base</div>
+            </div>
+            
+            <div class="endpoint">
+                <span class="endpoint-method get">GET</span>
+                <span class="endpoint-path">/api/documents</span>
+                <div class="endpoint-desc">List all documents</div>
+            </div>
+            
+            <div class="endpoint">
+                <span class="endpoint-method get">GET</span>
+                <span class="endpoint-path">/api/documents/{id}</span>
+                <div class="endpoint-desc">Get a specific document by ID</div>
+            </div>
+            
+            <div class="endpoint">
+                <span class="endpoint-method delete">DELETE</span>
+                <span class="endpoint-path">/api/documents/{id}</span>
+                <div class="endpoint-desc">Delete a document</div>
+            </div>
+            
+            <div class="endpoint">
+                <span class="endpoint-method post">POST</span>
+                <span class="endpoint-path">/api/chat</span>
+                <div class="endpoint-desc">Send a message and receive streaming response with RAG</div>
+            </div>
+            
+            <div class="endpoint">
+                <span class="endpoint-method get">GET</span>
+                <span class="endpoint-path">/api/conversations/{session_id}</span>
+                <div class="endpoint-desc">Get conversation history</div>
+            </div>
+            
+            <div class="endpoint">
+                <span class="endpoint-method delete">DELETE</span>
+                <span class="endpoint-path">/api/conversations/{session_id}</span>
+                <div class="endpoint-desc">Clear conversation history</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🧪 Quick Test</h2>
+            <div class="test-section">
+                <h3>Test the API</h3>
+                <button class="button" onclick="testHealth()">Test Health Endpoint</button>
+                <button class="button button-success" onclick="testAddDocument()">Add Sample Document</button>
+                <button class="button button-success" onclick="testListDocuments()">List Documents</button>
+                <button class="button button-success" onclick="testChat()">Test Chat</button>
+                <div id="result" class="result" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showResult(content, isError = false) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = content;
+            resultDiv.className = 'result ' + (isError ? 'status-error' : 'status-ok');
+        }
+
+        async function testHealth() {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                showResult('✅ Health Check Result:\n\n' + JSON.stringify(data, null, 2));
+            } catch (error) {
+                showResult('❌ Error: ' + error.message, true);
+            }
+        }
+
+        async function testAddDocument() {
+            try {
+                const response = await fetch('/api/documents', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        title: 'Sample Document',
+                        content: 'This is a sample document about RAG (Retrieval-Augmented Generation). RAG enhances language models by retrieving relevant documents before generating responses.',
+                        metadata: {
+                            author: 'Test User',
+                            category: 'AI'
+                        }
+                    })
+                });
+                const data = await response.json();
+                showResult('✅ Document Added:\n\n' + JSON.stringify(data, null, 2));
+            } catch (error) {
+                showResult('❌ Error: ' + error.message, true);
+            }
+        }
+
+        async function testListDocuments() {
+            try {
+                const response = await fetch('/api/documents');
+                const data = await response.json();
+                showResult('✅ Documents List:\n\n' + JSON.stringify(data, null, 2));
+            } catch (error) {
+                showResult('❌ Error: ' + error.message, true);
+            }
+        }
+
+        async function testChat() {
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        session_id: 'demo-session',
+                        message: 'Tell me about RAG'
+                    })
+                });
+                
+                const text = await response.text();
+                showResult('✅ Chat Response (Server-Sent Events):\n\n' + text);
+            } catch (error) {
+                showResult('❌ Error: ' + error.message, true);
+            }
+        }
+    </script>
+</body>
+</html>
