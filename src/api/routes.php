@@ -4,30 +4,14 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\RequestInterface as Request;
 use Slim\Factory\AppFactory;
 use Slim\Psr7\Stream;
+use App\Retrieval\{Document, VectorRepositoryInterface};
+use App\Chat\{ChatRepositoryInterface, ChatService};
 
-require_once __DIR__ . '/../../vendor/autoload.php';
-require_once __DIR__ . '/../Retrieval/Models.php';
-require_once __DIR__ . '/../Retrieval/VectorRepositoryInterface.php';
-require_once __DIR__ . '/../Retrieval/InMemoryVectorRepository.php';
-require_once __DIR__ . '/../Chat/Models.php';
-require_once __DIR__ . '/../Chat/ChatRepositoryInterface.php';
-require_once __DIR__ . '/../Chat/InMemoryChatRepository.php';
-require_once __DIR__ . '/../Chat/ChatService.php';
-require_once __DIR__ . '/../Llm/LlmClientInterface.php';
-require_once __DIR__ . '/../Llm/MockLlmClient.php';
-require_once __DIR__ . '/../Llm/OpenAiClient.php';
+// Load DI container
+$container = require __DIR__ . '/container.php';
 
-use App\Retrieval\{Document, InMemoryVectorRepository};
-use App\Chat\{InMemoryChatRepository, ChatService};
-use App\Llm\MockLlmClient;
-
-// Initialize repositories and services
-$vectorRepo = new InMemoryVectorRepository();
-$chatRepo = new InMemoryChatRepository();
-$llmClient = new MockLlmClient();
-$chatService = new ChatService($chatRepo, $vectorRepo, $llmClient);
-
-// Create Slim app
+// Create Slim app with DI container
+AppFactory::setContainer($container);
 $app = AppFactory::create();
 $app->addErrorMiddleware(true, true, true);
 
@@ -45,7 +29,9 @@ $app->addBodyParsingMiddleware();
  * Body: { "title": "...", "content": "...", "metadata": {...} }
  * Returns: { "success": true, "id": 1 }
  */
-$app->post('/api/documents', function (Request $request, Response $response) use ($vectorRepo) {
+$app->post('/api/documents', function (Request $request, Response $response) {
+    $vectorRepo = $this->get(VectorRepositoryInterface::class);
+    
     try {
         $data = $request->getParsedBody();
         
@@ -88,7 +74,8 @@ $app->post('/api/documents', function (Request $request, Response $response) use
  * 
  * Returns: { "success": true, "documents": [...], "count": 5 }
  */
-$app->get('/api/documents', function (Request $request, Response $response) use ($vectorRepo) {
+$app->get('/api/documents', function (Request $request, Response $response) {
+    $vectorRepo = $this->get(VectorRepositoryInterface::class);
     $documents = $vectorRepo->getAll();
     
     $response->getBody()->write(json_encode([
@@ -111,7 +98,8 @@ $app->get('/api/documents', function (Request $request, Response $response) use 
  * 
  * Returns: { "success": true, "document": {...} }
  */
-$app->get('/api/documents/{id}', function (Request $request, Response $response, array $args) use ($vectorRepo) {
+$app->get('/api/documents/{id}', function (Request $request, Response $response, array $args) {
+    $vectorRepo = $this->get(VectorRepositoryInterface::class);
     $id = (int) $args['id'];
     $document = $vectorRepo->get($id);
     
@@ -142,7 +130,8 @@ $app->get('/api/documents/{id}', function (Request $request, Response $response,
  * 
  * Returns: { "success": true, "message": "..." }
  */
-$app->delete('/api/documents/{id}', function (Request $request, Response $response, array $args) use ($vectorRepo) {
+$app->delete('/api/documents/{id}', function (Request $request, Response $response, array $args) {
+    $vectorRepo = $this->get(VectorRepositoryInterface::class);
     $id = (int) $args['id'];
     $deleted = $vectorRepo->delete($id);
     
@@ -173,7 +162,9 @@ $app->delete('/api/documents/{id}', function (Request $request, Response $respon
  * Body: { "session_id": "...", "message": "..." }
  * Returns: Server-Sent Events stream
  */
-$app->post('/api/chat', function (Request $request, Response $response) use ($chatService) {
+$app->post('/api/chat', function (Request $request, Response $response) {
+    $chatService = $this->get(ChatService::class);
+    
     try {
         $data = $request->getParsedBody();
         
@@ -222,7 +213,8 @@ $app->post('/api/chat', function (Request $request, Response $response) use ($ch
  * 
  * Returns: { "success": true, "messages": [...], "count": 10 }
  */
-$app->get('/api/conversations/{session_id}', function (Request $request, Response $response, array $args) use ($chatRepo) {
+$app->get('/api/conversations/{session_id}', function (Request $request, Response $response, array $args) {
+    $chatRepo = $this->get(ChatRepositoryInterface::class);
     $sessionId = $args['session_id'];
     $messages = $chatRepo->getMessages($sessionId);
     
@@ -248,7 +240,8 @@ $app->get('/api/conversations/{session_id}', function (Request $request, Respons
  * 
  * Returns: { "success": true, "message": "..." }
  */
-$app->delete('/api/conversations/{session_id}', function (Request $request, Response $response, array $args) use ($chatRepo) {
+$app->delete('/api/conversations/{session_id}', function (Request $request, Response $response, array $args) {
+    $chatRepo = $this->get(ChatRepositoryInterface::class);
     $sessionId = $args['session_id'];
     $deleted = $chatRepo->deleteConversation($sessionId);
     
