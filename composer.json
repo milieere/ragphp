@@ -8,8 +8,12 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Simona\\PhpPractice\\": "src/"
-        }
+            "App\\": "src/"
+        },
+        "files": [
+            "src/Chat/Models.php",
+            "src/Retrieval/Models.php"
+        ]
     },
     "authors": [
         {
@@ -22,6 +26,7 @@
         "slim/slim": "^4.14",
         "slim/psr7": "^1.7",
         "guzzlehttp/guzzle": "^7.8",
-        "php-di/php-di": "^7.0"
+        "php-di/php-di": "^7.0",
+        "monolog/monolog": "^3.0"
     }
 }

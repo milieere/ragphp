@@ -1,11 +1,6 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
-
-require_once __DIR__ . '/../../src/Retrieval/Models.php';
-require_once __DIR__ . '/../../src/Retrieval/VectorRepositoryInterface.php';
-require_once __DIR__ . '/../../src/Retrieval/InMemoryVectorRepository.php';
-
 use App\Retrieval\{Document, InMemoryVectorRepository};
 
 /**

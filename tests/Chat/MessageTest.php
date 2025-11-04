@@ -1,9 +1,6 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
-
-require_once __DIR__ . '/../../src/Chat/Models.php';
-
 use App\Chat\Message;
 
 /**

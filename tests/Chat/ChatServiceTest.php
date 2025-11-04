@@ -1,17 +1,7 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
-
-require_once __DIR__ . '/../../src/Retrieval/Models.php';
-require_once __DIR__ . '/../../src/Retrieval/VectorRepositoryInterface.php';
-require_once __DIR__ . '/../../src/Retrieval/InMemoryVectorRepository.php';
-require_once __DIR__ . '/../../src/Chat/Models.php';
-require_once __DIR__ . '/../../src/Chat/ChatRepositoryInterface.php';
-require_once __DIR__ . '/../../src/Chat/InMemoryChatRepository.php';
-require_once __DIR__ . '/../../src/Chat/ChatService.php';
-require_once __DIR__ . '/../../src/Llm/LlmClientInterface.php';
-require_once __DIR__ . '/../../src/Llm/MockLlmClient.php';
-
+use Psr\Log\NullLogger;
 use App\Retrieval\{Document, InMemoryVectorRepository};
 use App\Chat\{InMemoryChatRepository, ChatService};
 use App\Llm\MockLlmClient;
@@ -29,11 +19,13 @@ class ChatServiceTest extends TestCase {
         $this->vectorRepo = new InMemoryVectorRepository();
         $this->chatRepo = new InMemoryChatRepository();
         $llmClient = new MockLlmClient();
+        $logger = new NullLogger(); // No-op logger for tests
         
         $this->chatService = new ChatService(
             $this->chatRepo,
             $this->vectorRepo,
-            $llmClient
+            $llmClient,
+            $logger
         );
     }
     

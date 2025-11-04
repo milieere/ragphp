@@ -1,9 +1,6 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
-
-require_once __DIR__ . '/../../src/Retrieval/Models.php';
-
 use App\Retrieval\Document;
 
 /**

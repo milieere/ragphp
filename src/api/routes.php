@@ -2,6 +2,7 @@
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\RequestInterface as Request;
+use Psr\Log\LoggerInterface;
 use Slim\Factory\AppFactory;
 use Slim\Psr7\Stream;
 use App\Retrieval\{Document, VectorRepositoryInterface};
@@ -30,12 +31,17 @@ $app->addBodyParsingMiddleware();
  * Returns: { "success": true, "id": 1 }
  */
 $app->post('/api/documents', function (Request $request, Response $response) {
+    $logger = $this->get(LoggerInterface::class);
     $vectorRepo = $this->get(VectorRepositoryInterface::class);
+    
+    $logger->info('📥 POST /api/documents - Request received');
     
     try {
         $data = $request->getParsedBody();
+        $logger->debug('Request data', ['title' => $data['title'] ?? 'N/A', 'content_length' => strlen($data['content'] ?? '')]);
         
         if (!isset($data['title']) || !isset($data['content'])) {
+            $logger->warning('⚠️  Validation failed: Missing title or content');
             $response->getBody()->write(json_encode([
                 'success' => false,
                 'error' => 'Title and content are required'
@@ -51,6 +57,7 @@ $app->post('/api/documents', function (Request $request, Response $response) {
         );
         
         $vectorRepo->add($document);
+        $logger->info("✅ Document created successfully", ['id' => $document->id, 'title' => $document->title]);
         
         $response->getBody()->write(json_encode([
             'success' => true,
@@ -60,6 +67,7 @@ $app->post('/api/documents', function (Request $request, Response $response) {
         
         return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
     } catch (\InvalidArgumentException $e) {
+        $logger->error('❌ Document creation failed', ['error' => $e->getMessage()]);
         $response->getBody()->write(json_encode([
             'success' => false,
             'error' => $e->getMessage()
@@ -75,8 +83,12 @@ $app->post('/api/documents', function (Request $request, Response $response) {
  * Returns: { "success": true, "documents": [...], "count": 5 }
  */
 $app->get('/api/documents', function (Request $request, Response $response) {
+    $logger = $this->get(LoggerInterface::class);
     $vectorRepo = $this->get(VectorRepositoryInterface::class);
+    
+    $logger->info('📋 GET /api/documents - Fetching all documents');
     $documents = $vectorRepo->getAll();
+    $logger->debug('Retrieved documents', ['count' => count($documents)]);
     
     $response->getBody()->write(json_encode([
         'success' => true,
@@ -163,12 +175,17 @@ $app->delete('/api/documents/{id}', function (Request $request, Response $respon
  * Returns: Server-Sent Events stream
  */
 $app->post('/api/chat', function (Request $request, Response $response) {
+    $logger = $this->get(LoggerInterface::class);
     $chatService = $this->get(ChatService::class);
+    
+    $logger->info('💬 POST /api/chat - Chat request received');
     
     try {
         $data = $request->getParsedBody();
+        $logger->debug('Chat request', ['session_id' => $data['session_id'] ?? 'N/A', 'message' => substr($data['message'] ?? '', 0, 50) . '...']);
         
         if (!isset($data['session_id']) || !isset($data['message'])) {
+            $logger->warning('⚠️  Chat validation failed: Missing session_id or message');
             $response->getBody()->write(json_encode([
                 'success' => false,
                 'error' => 'session_id and message are required'
@@ -179,13 +196,19 @@ $app->post('/api/chat', function (Request $request, Response $response) {
         $sessionId = $data['session_id'];
         $message = $data['message'];
         
+        $logger->info('🚀 Starting chat processing', ['session_id' => $sessionId]);
+        
         // Create a custom stream for SSE
         $stream = fopen('php://temp', 'r+');
         
+        $chunkCount = 0;
         foreach ($chatService->chat($sessionId, $message) as $chunk) {
             $event = "data: " . json_encode(['chunk' => $chunk]) . "\n\n";
             fwrite($stream, $event);
+            $chunkCount++;
         }
+        
+        $logger->info('✅ Chat completed successfully', ['session_id' => $sessionId, 'chunks_streamed' => $chunkCount]);
         
         // Write done event
         fwrite($stream, "data: " . json_encode(['done' => true]) . "\n\n");
@@ -199,6 +222,7 @@ $app->post('/api/chat', function (Request $request, Response $response) {
             ->withBody(new Stream($stream));
             
     } catch (\InvalidArgumentException $e) {
+        $logger->error('❌ Chat failed', ['error' => $e->getMessage(), 'session_id' => $data['session_id'] ?? 'N/A']);
         $response->getBody()->write(json_encode([
             'success' => false,
             'error' => $e->getMessage()
@@ -270,6 +294,9 @@ $app->delete('/api/conversations/{session_id}', function (Request $request, Resp
  * Health check endpoint
  */
 $app->get('/api/health', function (Request $request, Response $response) {
+    $logger = $this->get(LoggerInterface::class);
+    $logger->info('❤️  Health check requested');
+    
     $response->getBody()->write(json_encode([
         'status' => 'healthy',
         'timestamp' => time()

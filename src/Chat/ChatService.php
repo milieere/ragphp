@@ -4,6 +4,7 @@ namespace App\Chat;
 
 use App\Retrieval\VectorRepositoryInterface;
 use App\Llm\LlmClientInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Orchestrates the RAG (Retrieval-Augmented Generation) chat flow
@@ -16,7 +17,8 @@ class ChatService {
     public function __construct(
         private ChatRepositoryInterface $chatRepo,
         private VectorRepositoryInterface $vectorRepo,
-        private LlmClientInterface $llm
+        private LlmClientInterface $llm,
+        private LoggerInterface $logger
     ) {}
     
     /**
@@ -27,22 +29,31 @@ class ChatService {
      * @return \Generator Yields chunks of the assistant's response
      */
     public function chat(string $sessionId, string $userMessage): \Generator {
+        $this->logger->debug('  📚 Step 1: Searching for relevant documents...');
         // Step 1: Search for relevant documents
         $searchResults = $this->vectorRepo->search($userMessage, 3);
+        $this->logger->info('  🔍 Found documents', ['count' => count($searchResults), 'titles' => array_map(fn($r) => $r->document->title, $searchResults)]);
         
+        $this->logger->debug('  💭 Step 2: Retrieving conversation history...');
         // Step 2: Get conversation history for context
         $history = $this->chatRepo->getMessages($sessionId, 10);
+        $this->logger->info('  📜 Retrieved history', ['message_count' => count($history)]);
         
+        $this->logger->debug('  🔨 Step 3: Building augmented prompt...');
         // Step 3: Build augmented prompt
         $prompt = $this->buildPrompt($userMessage, $searchResults, $history);
+        $this->logger->debug('  ✓ Prompt built', ['length' => strlen($prompt)]);
         
+        $this->logger->debug('  🤖 Step 4: Streaming LLM response...');
         // Step 4: Stream response from LLM
         $fullResponse = '';
         foreach ($this->llm->streamCompletion($prompt) as $chunk) {
             $fullResponse .= $chunk;
             yield $chunk;
         }
+        $this->logger->info('  ✓ LLM response complete', ['response_length' => strlen($fullResponse)]);
         
+        $this->logger->debug('  💾 Step 5: Saving conversation...');
         // Step 5: Save conversation after streaming completes
         $sources = array_map(fn($r) => [
             'id' => $r->document->id,
@@ -64,6 +75,8 @@ class ChatService {
             content: $fullResponse,
             sources: $sources
         ));
+        
+        $this->logger->info('  ✅ Conversation saved successfully');
     }
     
     /**

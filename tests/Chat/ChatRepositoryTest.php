@@ -1,11 +1,6 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
-
-require_once __DIR__ . '/../../src/Chat/Models.php';
-require_once __DIR__ . '/../../src/Chat/ChatRepositoryInterface.php';
-require_once __DIR__ . '/../../src/Chat/InMemoryChatRepository.php';
-
 use App\Chat\{InMemoryChatRepository, Conversation, Message};
 
 /**
