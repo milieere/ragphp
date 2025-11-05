@@ -11,8 +11,6 @@
             "App\\": "src/"
         },
         "files": [
-            "src/Chat/Models.php",
-            "src/Retrieval/Models.php"
         ]
     },
     "authors": [

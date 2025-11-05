@@ -1,12 +1,8 @@
 <?php
 
-namespace App\Chat;
+namespace App\Chat\Models;
 
-enum ChatRole
-{
-    case Bot;
-    case Human;
-}
+use App\Chat\Models\ChatRole;
 
 readonly class ChatMessage {
     public function __construct(

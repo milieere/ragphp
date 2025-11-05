@@ -1,0 +1,27 @@
+; Xdebug Configuration Example
+; Copy these lines to your php.ini file
+; Find php.ini location with: php --ini
+
+; Enable Xdebug extension
+zend_extension=xdebug.so
+
+; Set Xdebug mode (debug for step debugging, coverage for code coverage)
+xdebug.mode=debug
+
+; Start debugging automatically with every request
+xdebug.start_with_request=yes
+
+; Configure client connection
+xdebug.client_port=9003
+xdebug.client_host=127.0.0.1
+
+; IDE key for VS Code/Cursor
+xdebug.idekey=VSCODE
+
+; Optional: Log file for troubleshooting
+; xdebug.log=/tmp/xdebug.log
+; xdebug.log_level=7
+
+; For code coverage (when running tests with --coverage)
+; xdebug.mode=coverage
+

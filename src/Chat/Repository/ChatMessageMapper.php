@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Chat;
+namespace App\Chat\Repository;
 
-use App\Chat\{ChatMessage, ChatRole};
+use App\Chat\Models\{ChatMessage, ChatRole};
 
   
 class ChatMessageMapper {
@@ -17,10 +17,10 @@ class ChatMessageMapper {
         );
     }
 
-    public static function toRow(ChatMessage $message, string $chatId): array {
+    public static function toRow(ChatMessage $message): array {
         return [
             ':id' => $message->id,
-            ':chat_id' => $chatId,
+            ':chat_id' => $message->chatId,
             ':role' => $message->role->name,
             ':content' => $message->content,
             ':timestamp' => $message->timestamp->format('Y-m-d H:i:s')
