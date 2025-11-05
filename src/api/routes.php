@@ -21,7 +21,4 @@ $app->addBodyParsingMiddleware();
 // Document Endpoints
 // ====================
 
-
-
 return $app;
-

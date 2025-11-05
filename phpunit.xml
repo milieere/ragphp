@@ -7,11 +7,8 @@
          failOnRisky="true"
          failOnWarning="true">
     <testsuites>
-        <testsuite name="Retrieval">
-            <directory>tests/Retrieval</directory>
-        </testsuite>
-        <testsuite name="Chat">
-            <directory>tests/Chat</directory>
+        <testsuite name="Unit Tests">
+            <directory>tests</directory>
         </testsuite>
     </testsuites>
 </phpunit>
