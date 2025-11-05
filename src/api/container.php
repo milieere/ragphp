@@ -5,12 +5,6 @@ use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use Monolog\Formatter\LineFormatter;
 use Psr\Log\LoggerInterface;
-use App\Retrieval\{VectorRepositoryInterface, InMemoryVectorRepository};
-use App\Chat\{ChatRepositoryInterface, InMemoryChatRepository, ChatService};
-use App\Llm\{LlmClientInterface, MockLlmClient, OpenAiClient};
-
-// Composer autoloader - automatically loads all classes based on namespace
-require_once __DIR__ . '/../../vendor/autoload.php';
 
 $containerBuilder = new ContainerBuilder();
 
@@ -34,25 +28,7 @@ $containerBuilder->addDefinitions([
         $logger->pushHandler($streamHandler);
         
         return $logger;
-    },
-    
-    // Bind interfaces to concrete implementations
-    VectorRepositoryInterface::class => DI\create(InMemoryVectorRepository::class),
-    
-    ChatRepositoryInterface::class => DI\create(InMemoryChatRepository::class),
-    
-    LlmClientInterface::class => DI\create(MockLlmClient::class),
-    // Uncomment below to use OpenAI instead of mock:
-    // LlmClientInterface::class => DI\create(OpenAiClient::class),
-    
-    // ChatService with autowired dependencies
-    ChatService::class => DI\autowire()
-        ->constructor(
-            DI\get(ChatRepositoryInterface::class),
-            DI\get(VectorRepositoryInterface::class),
-            DI\get(LlmClientInterface::class),
-            DI\get(LoggerInterface::class)
-        ),
+    }
 ]);
 
 return $containerBuilder->build();
