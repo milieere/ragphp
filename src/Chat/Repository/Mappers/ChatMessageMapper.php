@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Chat\Repository;
+namespace App\Chat\Repository\Mappers;
 
 use App\Chat\Models\{ChatMessage, ChatRole};
 

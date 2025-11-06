@@ -10,8 +10,6 @@ readonly class ChatMessage {
         public string $chatId,
         public ChatRole $role,
         public string $content,
-        public ?\DateTimeImmutable $timestamp = null
-    ) {
-        $this->timestamp ??= new \DateTimeImmutable();
-    }
+        public \DateTimeImmutable $timestamp = new \DateTimeImmutable()
+    ) {}
 }

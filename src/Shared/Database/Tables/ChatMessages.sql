@@ -7,4 +7,4 @@ CREATE TABLE IF NOT EXISTS chat_messages (
 );
 
 CREATE INDEX IF NOT EXISTS idx_chat_id ON chat_messages(chat_id);
-CREATE INDEX IF NOT EXISTS idx_chat_id_created ON chat_messages(chat_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_chat_id_created ON chat_messages(chat_id, timestamp);
